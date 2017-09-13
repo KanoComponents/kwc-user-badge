@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+        <title>kwc-user-badge test</title>
+
+        <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+        <script src="../../web-component-tester/browser.js"></script>
+
+        <link rel="import" href="../kwc-user-badge.html">
+    </head>
+    <body>
+        <test-fixture id="basic">
+            <template>
+                <kwc-user-badge></kwc-user-badge>
+            </template>
+        </test-fixture>
+
+        <test-fixture id="populated">
+            <template>
+                <kwc-user-badge level="2"
+                                progress="0.3"
+                                stroke-width="6"
+                                width="80">
+                                </kwc-user-badge>
+            </template>
+        </test-fixture>
+
+      <script>
+          suite('Default', function() {
+              var basic;
+
+              setup(function () {
+                  basic = fixture('basic');
+              });
+
+              test('instantiating the element works', function() {
+                  assert.equal(basic.is, 'kwc-user-badge');
+              });
+
+              test('the level should be 0 by default', function(done) {
+                  assert.equal(basic.level, 0);
+                  flush(function () {
+                      var labelElement = Polymer.dom(basic.root).querySelector('#label');
+                      assert.equal(labelElement.textContent, 0);
+                      done();
+                  });
+              });
+
+              test('the progress should be 0 by default', function() {
+                  assert.equal(basic.progress, 0);
+              });
+
+              test('the width should be 125 by default', function(done) {
+                  assert.equal(basic.width, 125);
+                  flush(function () {
+                      var svgElement = Polymer.dom(basic.root).querySelector('#svg'),
+                          width = svgElement.getAttributeNS(null, 'width');
+                      assert.equal(width, 125);
+                      done();
+                  });
+              });
+
+              test('the stroke width should be 8px by default', function(done) {
+                  assert.equal(basic.strokeWidth, 8);
+                  flush(function () {
+                      var progressElement = Polymer.dom(basic.root).querySelector('#progress'),
+                          strokeWidth = progressElement.getAttributeNS(null, 'stroke-width');
+                      assert.equal(strokeWidth, '8px');
+                      done();
+                  });
+              });
+          });
+
+          suite('Setting the values', function() {
+              var populated;
+
+              setup(function () {
+                  populated = fixture('populated');
+              });
+
+              test('instantiating the element works', function() {
+                  assert.equal(populated.is, 'kwc-user-badge');
+              });
+
+              test('it should be possible to set the level', function(done) {
+                  assert.equal(populated.level, 2);
+                  flush(function () {
+                      var labelElement = Polymer.dom(populated.root).querySelector('#label');
+                      assert.equal(labelElement.textContent, 2);
+                      done();
+                  });
+              });
+
+              test('it should be possible to set the level', function() {
+                  assert.equal(populated.progress, 0.3);
+              });
+
+              test('it should be possible to set the width', function(done) {
+                  assert.equal(populated.width, 80);
+                  flush(function () {
+                      var svgElement = Polymer.dom(populated.root).querySelector('#svg'),
+                          width = svgElement.getAttributeNS(null, 'width');
+                      assert.equal(width, 80);
+                      done();
+                  });
+              });
+
+              test('it should be possible to set the stroke width', function(done) {
+                  assert.equal(populated.strokeWidth, 6);
+                  flush(function () {
+                      var progressElement = Polymer.dom(populated.root).querySelector('#progress'),
+                          strokeWidth = progressElement.getAttributeNS(null, 'stroke-width');
+                      assert.equal(strokeWidth, '6px');
+                      done();
+                  });
+              });
+          });
+      </script>
+    </body>
+</html>

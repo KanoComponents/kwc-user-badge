@@ -1,0 +1,273 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../web-components/kano-style/kano-style.html">
+
+<!--
+`kwc-user-badge`
+To display the user progress in an circlular format
+
+Example:
+
+    <kwc-user-badge level="2"
+                    progress="0.3"
+                    stroke-width="6"
+                    width="80">
+                    </kwc-user-badge>
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--kwc-user-badge-background-color` | Color of the background arc | `--color-chateau`
+`--kwc-user-badge-progress-color` | Color of the progress arc | `--color-candlelight`
+`--kwc-user-badge-label-color` | Color of the label background | `--color-kano-orange`
+
+@demo demo/index.html
+-->
+
+<dom-module id="kwc-user-badge">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            .wrapper {
+                position: relative;
+            }
+            #background {
+                display: block;
+                fill: transparent;
+                stroke: var(--kwc-user-badge-background-color, var(--color-chateau));
+                stroke-linecap: round;
+                transform: rotate(90deg);
+                transform-origin: center;
+            }
+            #progress {
+                display: block;
+                fill: transparent;
+                stroke: var(--kwc-user-badge-progress-color, var(--color-candlelight));
+                stroke-linecap: round;
+                transition: stroke-dashoffset linear 200ms;
+                transform: rotate(90deg);
+                transform-origin: center;
+            }
+            #label-wrapper {
+                display: block;
+                fill: var(kwc-user-badge-label-color, var(--color-kano-orange));
+                stroke: white;
+            }
+            #label {
+                fill: var(--color-white);
+                font-family: var(--font-body);
+                font-weight: bold;
+            }
+            svg,
+            img {
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+            img {
+                z-index: 10;
+            }
+            svg {
+                z-index: 20;
+            }
+        </style>
+        <div class="wrapper" style$="[[_wrapperStyle]]">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 id="svg"
+                 height$="[[width]]"
+                 width$="[[width]]"
+                 viewBox$="0 0 [[width]] [[width]]">
+                <circle id="background"
+                        cx$="[[_center]]"
+                        cy$="[[_center]]"
+                        r$="[[_radius]]"
+                        stroke-width$="[[strokeWidth]]px"></circle>
+                <circle id="progress"
+                        cx$="[[_center]]"
+                        cy$="[[_center]]"
+                        r$="[[_radius]]"
+                        stroke-width$="[[strokeWidth]]px"></circle>
+                <circle id="label-wrapper"
+                        cx$="[[_center]]"
+                        cy$="[[_labelY]]"
+                        r$="[[_labelRadius]]"
+                        stroke-width$="[[_labelStrokeWidth]]px"></circle>
+                <text id="label"
+                      x$="[[_center]]"
+                      y$="[[_labelY]]"
+                      text-anchor="middle"
+                      font-size$="[[_labelFontSize]]"
+                      dominant-baseline="central">
+                    [[level]]
+                </text>
+            </svg>
+            <img src$="[[avatar]]"
+                 height$="[[_imageWidth]]"
+                 width$="[[_imageWidth]]" />
+          </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'kwc-user-badge',
+            properties: {
+                /** Source of the user's avatar or the default avatar */
+                avatar: {
+                    type: String,
+                    value: '../assets/avatar.png'
+                },
+                /** Private property to allow for styling */
+                _center: {
+                  type: Number,
+                  computed: '_computeCenter(width)'
+                },
+                /** Private property to allow for styling the avatar image */
+                _imageWidth: {
+                    type: Number,
+                    computed: '_computeImageWidth(width, strokeWidth)'
+                },
+                /** Private property to allow for styling the label */
+                _labelFontSize: {
+                    type: Number,
+                    computed: '_computeLabelFontSize(width, strokeWidth)'
+                },
+                /** Private property to allow for styling the label */
+                _labelRadius: {
+                    type: Number,
+                    computed: '_computeLabelRadius(strokeWidth)'
+                },
+                /** Private property to allow for styling the label */
+                _labelStrokeWidth: {
+                    type: Number,
+                    computed: '_computeLabelStrokeWidth(width, strokeWidth)'
+                },
+                /** Private property to allow for styling the label */
+                _labelY: {
+                    type: Number,
+                    computed: '_computeLabelY(width, strokeWidth)'
+                },
+                /** The user's level */
+                level: {
+                    type: Number,
+                    value: 0
+                },
+                /** The user's percentage progress */
+                progress: {
+                    type: Number,
+                    value: 0
+                },
+                /** Private property to allow for styling and setup */
+                _radius: {
+                    type: Number,
+                    computed: '_computeRadius(width, strokeWidth)'
+                },
+                /** The width of the progress circle stroke */
+                strokeWidth: {
+                    type: Number,
+                    value: 8
+                },
+                /** The width (and therefore height) of the element */
+                width: {
+                    type: Number,
+                    value: 125,
+                    reflectToAttribute: true
+                },
+                /** Private property to allow for correct sizing of elements */
+                _wrapperStyle: {
+                    type: Number,
+                    computed: '_computeWrapperStyle(width)',
+                    reflectToAttribute: true
+                }
+            },
+            observers: [
+                '_updateProgress(progress, _radius)'
+            ],
+            /**
+             * Compute the center of the element to allow
+             * for correct positioning
+             * @type {Number} width
+             * @return {Number}
+             */
+            _computeCenter (width) {
+                return width / 2;
+            },
+            /**
+             * Compute the font size of the label text
+             * @type {Number} width
+             * @type {Number} strokeWidth
+             * @return {Number}
+             */
+            _computeLabelFontSize  (width, strokeWidth) {
+                return strokeWidth * 1.8;
+            },
+            /**
+             * Compute the radius of the label wrapper
+             * @type {Number} width
+             * @return {Number}
+             */
+            _computeLabelRadius  (strokeWidth) {
+                return strokeWidth * 1.5;
+            },
+            /**
+             * Compute the width of the label stroke
+             * @type {Number} width
+             * @type {Number} strokeWidth
+             * @return {Number}
+             */
+            _computeLabelStrokeWidth  (width, strokeWidth) {
+                return strokeWidth / 2;
+            },
+            /**
+             * Compute the Y position for the label elements
+             * @type {Number} width
+             * @type {Number} strokeWidth
+             * @return {Number}
+             */
+            _computeLabelY (width, strokeWidth) {
+                return width - (strokeWidth * 2);
+            },
+            /**
+             * Compute the width of the avatar image
+             * @type {Number} width
+             * @type {Number} strokeWidth
+             * @return {Number}
+             */
+            _computeImageWidth (width, strokeWidth) {
+                return width - (strokeWidth * 7);
+            },
+            /**
+             * Compute the radius of various elements
+             * @type {Number} width
+             * @type {Number} strokeWidth
+             * @return {Number}
+             */
+            _computeRadius (width, strokeWidth) {
+                return (width / 2) - (strokeWidth * 2);
+            },
+            /**
+             * Compute the style string for the wrapper div
+             * @type {Number} width
+             * @return {String} the style string for the wrapper
+             */
+            _computeWrapperStyle (width) {
+                return `height: ${width}px; width: ${width}px;`;
+            },
+            /**
+             * Updates the progress ring of the component
+             * @type {Number} progress
+             * @type {Number} radius
+             */
+            _updateProgress (progress, radius) {
+                let progressCircle = this.$.progress;
+                    c = Math.PI * (radius * 2),
+                    progressValue = Math.max(0, Math.min(1, progress));
+                progressCircle.setAttributeNS(null, 'stroke-dasharray', c);
+                progressCircle.setAttributeNS(null, 'stroke-dashoffset', c);
+                progressCircle.setAttributeNS(null, 'stroke-dashoffset', (1 - progressValue) * c);
+            }
+        });
+    </script>
+</dom-module>
