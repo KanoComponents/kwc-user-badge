@@ -28,8 +28,14 @@ Custom property | Description | Default
             :host {
                 display: block;
             }
-            .wrapper {
+            .wrapper,
+            .image-wrapper {
                 position: relative;
+            }
+            .wrapper {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-center-justified;
             }
             #background {
                 display: block;
@@ -48,16 +54,6 @@ Custom property | Description | Default
                 transform: rotate(90deg);
                 transform-origin: center;
             }
-            #label-wrapper {
-                display: block;
-                fill: var(--kwc-user-badge-label-color, var(--color-kano-orange));
-                stroke: white;
-            }
-            #label {
-                fill: var(--color-white);
-                font-family: var(--font-body);
-                font-weight: bold;
-            }
             svg,
             img {
                 bottom: 0;
@@ -73,40 +69,54 @@ Custom property | Description | Default
             svg {
                 z-index: 20;
             }
+            #label {
+                border-radius: 100%;
+                color: white;
+                display: block;
+                font-family: var(--font-body);
+                font-weight: bold;
+
+                text-align: center;
+            }
+            :host([layout="vertical"]) #label {
+                position: absolute;
+                background-color: var(--kwc-user-badge-label-color, var(--color-kano-orange));
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+                z-index: 30;
+            }
+            :host([layout="horizontal"]) #label {
+                background-color: var(--color-grey);
+            }
         </style>
-        <div class="wrapper" style$="[[_wrapperStyle]]">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 id="svg"
-                 height$="[[width]]"
-                 width$="[[width]]"
-                 viewBox$="0 0 [[width]] [[width]]">
-                <circle id="background"
-                        cx$="[[_center]]"
-                        cy$="[[_center]]"
-                        r$="[[_radius]]"
-                        stroke-width$="[[strokeWidth]]px"></circle>
-                <circle id="progress"
-                        cx$="[[_center]]"
-                        cy$="[[_center]]"
-                        r$="[[_radius]]"
-                        stroke-width$="[[strokeWidth]]px"></circle>
-                <circle id="label-wrapper"
-                        cx$="[[_center]]"
-                        cy$="[[_labelY]]"
-                        r$="[[_labelRadius]]"
-                        stroke-width$="[[_labelStrokeWidth]]px"></circle>
-                <text id="label"
-                      x$="[[_center]]"
-                      y$="[[_labelY]]"
-                      text-anchor="middle"
-                      font-size$="[[_labelFontSize]]"
-                      dominant-baseline="central">
-                    [[level]]
-                </text>
-            </svg>
-            <img src$="[[avatar]]"
-                 height$="[[_imageWidth]]"
-                 width$="[[_imageWidth]]" />
+        <div class="wrapper">
+            <div class="image-wrapper" style$="[[_imageWrapperStyle]]">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   id="svg"
+                   height$="[[width]]"
+                   width$="[[width]]"
+                   viewBox$="0 0 [[width]] [[width]]">
+                  <circle id="background"
+                          cx$="[[_center]]"
+                          cy$="[[_center]]"
+                          r$="[[_radius]]"
+                          stroke-width$="[[strokeWidth]]px"></circle>
+                  <circle id="progress"
+                          cx$="[[_center]]"
+                          cy$="[[_center]]"
+                          r$="[[_radius]]"
+                          stroke-width$="[[strokeWidth]]px"></circle>
+              </svg>
+              <img src$="[[avatar]]"
+                   height$="[[_imageWidth]]"
+                   width$="[[_imageWidth]]" />
+            </div>
+            <div id="label"
+                 style$="[[_labelStyle]]">
+                [[level]]
+            </div>
           </div>
     </template>
 
@@ -121,33 +131,29 @@ Custom property | Description | Default
                 },
                 /** Private property to allow for styling */
                 _center: {
-                  type: Number,
-                  computed: '_computeCenter(width)'
+                    type: Number,
+                    computed: '_computeCenter(width)'
                 },
                 /** Private property to allow for styling the avatar image */
                 _imageWidth: {
                     type: Number,
                     computed: '_computeImageWidth(width, strokeWidth)'
                 },
-                /** Private property to allow for styling the label */
-                _labelFontSize: {
+                /** Private property to allow for correct sizing of elements */
+                _imageWrapperStyle: {
                     type: Number,
-                    computed: '_computeLabelFontSize(width, strokeWidth)'
+                    computed: '_computeImageWrapperStyle(width)'
                 },
-                /** Private property to allow for styling the label */
-                _labelRadius: {
+                /** Private property to style the label */
+                _labelStyle: {
                     type: Number,
-                    computed: '_computeLabelRadius(strokeWidth)'
+                    computed: '_computeLabelStyle(layout, strokeWidth, width)'
                 },
-                /** Private property to allow for styling the label */
-                _labelStrokeWidth: {
-                    type: Number,
-                    computed: '_computeLabelStrokeWidth(width, strokeWidth)'
-                },
-                /** Private property to allow for styling the label */
-                _labelY: {
-                    type: Number,
-                    computed: '_computeLabelY(width, strokeWidth)'
+                /** The layout of the element */
+                layout: {
+                    type: String,
+                    value: 'vertical',
+                    reflectToAttribute: true
                 },
                 /** The user's level */
                 level: {
@@ -174,12 +180,6 @@ Custom property | Description | Default
                     type: Number,
                     value: 125,
                     reflectToAttribute: true
-                },
-                /** Private property to allow for correct sizing of elements */
-                _wrapperStyle: {
-                    type: Number,
-                    computed: '_computeWrapperStyle(width)',
-                    reflectToAttribute: true
                 }
             },
             observers: [
@@ -195,39 +195,32 @@ Custom property | Description | Default
                 return width / 2;
             },
             /**
-             * Compute the font size of the label text
-             * @type {Number} width
+             * Compute the label styling
+             * @type {String} layout
              * @type {Number} strokeWidth
-             * @return {Number}
-             */
-            _computeLabelFontSize  (width, strokeWidth) {
-                return strokeWidth * 1.8;
-            },
-            /**
-             * Compute the radius of the label wrapper
              * @type {Number} width
-             * @return {Number}
+             * @return {String}
              */
-            _computeLabelRadius  (strokeWidth) {
-                return strokeWidth * 1.5;
-            },
-            /**
-             * Compute the width of the label stroke
-             * @type {Number} width
-             * @type {Number} strokeWidth
-             * @return {Number}
-             */
-            _computeLabelStrokeWidth  (width, strokeWidth) {
-                return strokeWidth / 2;
-            },
-            /**
-             * Compute the Y position for the label elements
-             * @type {Number} width
-             * @type {Number} strokeWidth
-             * @return {Number}
-             */
-            _computeLabelY (width, strokeWidth) {
-                return width - (strokeWidth * 2);
+            _computeLabelStyle (layout, strokeWidth, width) {
+                let labelBorder,
+                    labelFontSize,
+                    labelStrokeWidth,
+                    labelWidth;
+                if (layout === 'horizontal') {
+                    labelBorder = '0';
+                    labelWidth = width / 2.5;
+                    labelFontSize = labelWidth / 1.5;
+                } else {
+                    labelFontSize = strokeWidth * 1.8;
+                    labelStrokeWidth = strokeWidth / 2;
+                    labelBorder = `${labelStrokeWidth}px solid white`;
+                    labelWidth = strokeWidth * 3;
+                }
+                return `border: ${labelBorder};
+                        font-size: ${labelFontSize}px;
+                        height: ${labelWidth}px;
+                        line-height: ${labelWidth}px;
+                        width: ${labelWidth}px`;
             },
             /**
              * Compute the width of the avatar image
@@ -252,7 +245,7 @@ Custom property | Description | Default
              * @type {Number} width
              * @return {String} the style string for the wrapper
              */
-            _computeWrapperStyle (width) {
+            _computeImageWrapperStyle (width) {
                 return `height: ${width}px; width: ${width}px;`;
             },
             /**
