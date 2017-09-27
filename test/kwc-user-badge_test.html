@@ -40,6 +40,10 @@
                   assert.equal(basic.is, 'kwc-user-badge');
               });
 
+              test('the layout should be vertical', function() {
+                  assert.equal(basic.layout, 'vertical');
+              });
+
               test('the level should be 0 by default', function(done) {
                   assert.equal(basic.level, 0);
                   flush(function () {
