@@ -75,8 +75,8 @@ Custom property | Description | Default
                 display: block;
                 font-family: var(--font-body);
                 font-weight: bold;
-
                 text-align: center;
+                margin-left: 8px;
             }
             :host([layout="vertical"]) #label {
                 position: absolute;
@@ -88,7 +88,7 @@ Custom property | Description | Default
                 z-index: 30;
             }
             :host([layout="horizontal"]) #label {
-                background-color: var(--color-grey);
+                background-color: var(--kwc-user-badge-label-color, var(--color-grey));
             }
         </style>
         <div class="wrapper">
@@ -212,7 +212,7 @@ Custom property | Description | Default
                     labelFontSize = labelWidth / 1.5;
                 } else {
                     labelFontSize = strokeWidth * 1.8;
-                    labelStrokeWidth = strokeWidth / 2;
+                    labelStrokeWidth = strokeWidth / 4;
                     labelBorder = `${labelStrokeWidth}px solid white`;
                     labelWidth = strokeWidth * 3;
                 }
@@ -229,7 +229,16 @@ Custom property | Description | Default
              * @return {Number}
              */
             _computeImageWidth (width, strokeWidth) {
-                return width - (strokeWidth * 7);
+                /*
+                * The image width is calculated on the edge of its box, the svg
+                * radius as well but the stroke is drawn on the edge, leaving
+                * half `strokeWidth` inside and half outside.
+                * The image size should be 1 `strokeWidth` apart from the
+                * progress so we reduce 4 `strokeWidth` from the `width`
+                * (to account 2 `strokeWidth` each side) and then we reduce 1
+                * more `strokeWidth` (to account half `strokeWidth` each side).
+                */
+                return (width) - (strokeWidth * 4) - (strokeWidth);
             },
             /**
              * Compute the radius of various elements
@@ -238,7 +247,7 @@ Custom property | Description | Default
              * @return {Number}
              */
             _computeRadius (width, strokeWidth) {
-                return (width / 2) - (strokeWidth * 2);
+                return (width / 2) - strokeWidth;
             },
             /**
              * Compute the style string for the wrapper div
