@@ -113,10 +113,12 @@ Custom property | Description | Default
                    height$="[[_imageWidth]]"
                    width$="[[_imageWidth]]" />
             </div>
-            <div id="label"
-                 style$="[[_labelStyle]]">
-                [[level]]
-            </div>
+            <template is="dom-if" if="[[displayLevel]]">
+                <div id="label"
+                     style$="[[_labelStyle]]">
+                    [[level]]
+                </div>
+            </template>
           </div>
     </template>
 
@@ -133,6 +135,11 @@ Custom property | Description | Default
                 _center: {
                     type: Number,
                     computed: '_computeCenter(width)'
+                },
+                /** Property to show or hide the user level */
+                displayLevel: {
+                    type: Boolean,
+                    value: true
                 },
                 /** Private property to allow for styling the avatar image */
                 _imageWidth: {
